@@ -35,5 +35,11 @@ ffmpeg -i {input_filename.y4m} -c:v libx264-pix_fmt yuv420p -an -qp {QP=20} -g 2
 
 6. Effect of Codec 
 
-ffmpeg -i {input_filename.y4m} -c:v libx265 -pix_fmt yuv420p –an  -x265-params -qp {QP=30,40,50} {output_filename.mp4}
+ffmpeg -i {input_filename.y4m} -c:v libx265 -pix_fmt yuv420p –an  -x265-params qp={QP=30,40,50} {output_filename.mp4}
+
+
+Probe the bit rate of video stream
+
+ffprobe -v error -select_streams v:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 input.mp4
+
 
