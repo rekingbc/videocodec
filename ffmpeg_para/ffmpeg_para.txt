@@ -14,23 +14,26 @@ measure hte quality of PSNR and SSIM of a video with respect to its original unc
 ffmpeg -i {output_filename.mp4} -i {reference_filename.y4m} -an -filter_complex psnr -f mp4 NUL
 ffmpeg -i {output_filename.mp4} -i {reference_filename.y4m} -an -filter_complex ssim -f mp4 NUL
 
+ffmpeg -i input_video.mp4 -i reference_video.mp4 -filter_complex "psnr" "output_video.mp4"
+
+
 2. Effect of GOP length
 
 ffmpeg -i {input_filename.y4m} -c:v libx264-pix_fmt yuv420p -an -qp {QP=20} -g 30 -keyint_min 30  {output_filename.mp4}
 
 3. Effect of number of reference frames
 
-ffmpeg -i {input_filename.y4m} -c:v libx264-pix_fmt yuv420p -an -qp {QP=20} -g 30 -keyint_min 30  -refs {REF} {output_filename.mp4}
+ffmpeg -i {input_filename.y4m} -c:v libx264-pix_fmt yuv420p -an -qp {QP=20} -g 250 -keyint_min 250  -refs {REF=1 2 4 8 16} {output_filename.mp4}
 
 4. Effect of Motion Estimation Range and Method
 
-ffmpeg -i {input_filename.y4m} -c:v libx264-pix_fmt yuv420p -an -qp {QP=20} -g 30 -keyint_min 30  -refs {REF} {output_filename.mp4}
+ffmpeg -i {input_filename.y4m} -c:v libx264-pix_fmt yuv420p -an -qp {QP=20} -g 250 -keyint_min 250  -refs {REF=2} -me_method {epzs,full} -me_range {4, 8, 16} {output_filename.mp4}
 
 5. Effect of Maximum Number of B frames
 
-ffmpeg -i {input_filename.y4m} -c:v libx264-pix_fmt yuv420p -an -qp {QP=20} -g 30 -keyint_min 30  -refs {REF} {output_filename.mp4}
+ffmpeg -i {input_filename.y4m} -c:v libx264-pix_fmt yuv420p -an -qp {QP=20} -g 250 -keyint_min 250  -refs {REF=2} -bf {0,2,4,8} {output_filename.mp4}
 
 6. Effect of Codec 
 
-ffmpeg -i {input_filename.y4m} -c:v libx265 -pix_fmt yuv420p –an  -x265-params qp={QP} {output_filename.mp4}
+ffmpeg -i {input_filename.y4m} -c:v libx265 -pix_fmt yuv420p –an  -x265-params -qp {QP=30,40,50} {output_filename.mp4}
 
