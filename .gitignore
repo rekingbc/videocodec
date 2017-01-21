@@ -1,0 +1,66 @@
+H.264/.gradle
+H.264s/build/
+H.264s/src/main/resources
+
+H.264s/.metadata
+H.264s/bin/
+H.264s/tmp/
+H.264s/*.tmp
+H.264s/*.bak
+H.264s/*.swp
+H.264s/*~.nib
+H.264s/local.properties
+H.264s/.settings/
+H.264s/.loadpath
+H.264s/.recommenders
+
+# Eclipse Core
+H.264s/.project
+
+# External tool builders
+H.264s/.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+H.264s/*.launch
+
+# PyDev specific (Python IDE for Eclipse)
+H.264s/*.pydevproject
+
+# CDT-specific (C/C++ Development Tooling)
+H.264s/.cproject
+
+# JDT-specific (Eclipse Java Development Tools)
+H.264s/.classpath
+
+# Java annotation processor (APT)
+H.264s/.factorypath
+
+# PDT-specific (PHP Development Tools)
+H.264s/.buildpath
+
+# sbteclipse plugin
+H.264s/.target
+
+# Tern plugin
+.tern-project
+
+# TeXlipse plugin
+.texlipse
+
+# STS (Spring Tool Suite)
+.springBeans
+
+# Code Recommenders
+.recommenders/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+H.264s/.gradletasknamecache
+
+# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties
