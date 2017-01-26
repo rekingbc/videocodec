@@ -435,8 +435,7 @@ public class H264s {
 				if (!blnInverse) {
 					// \\\\\\\\\\ FILL IN HERE //////////
 					
-					intMode =  calculateIFrameBlockMode(arrOriginal,
-							arrPredictedSlice, h, w, intMacroBlockSize);
+					intMode =  calculateIFrameBlockMode(arrOriginal, arrPredictedSlice, h, w, intMacroBlockSize);
 					
 					addIFrameMoitionVector(intFrameIndex, intMode);
 					
@@ -554,30 +553,27 @@ public class H264s {
         ArrayList<int[][]> arrDecodeGroup = new ArrayList<int[][]>();
 		int [][] arrOriginSlice =  new int[intMacroBlockSize][intMacroBlockSize];
 		int [][] arrDecodeSlice =  new int[intMacroBlockSize][intMacroBlockSize];
+		arrOriginSlice = Helper.getSlice(arrOriginal,  h, w,intMacroBlockSize);
+		
 		for(int i = 0; i < 3; i++){
 			if(i == 0)
 			{
-				Helper.copySlice(arrOriginal, arrOriginSlice, h, w,
-						intMacroBlockSize);;
+				
 				arrDecodeSlice = modePredHOR(arrOriginal, h, w, intMacroBlockSize);
 				arrDecodeGroup.add(arrDecodeSlice);
 				
 				IFrameError.add(Helper.meanAbsoluteError(arrOriginSlice,arrDecodeSlice));
 			}
 			else if(i == 1)
-			{
-				Helper.copySlice(arrOriginal, arrOriginSlice, h, w,
-						intMacroBlockSize);;
+			{			
 				arrDecodeSlice = modePredVER(arrOriginal, h, w, intMacroBlockSize);
 				arrDecodeGroup.add(arrDecodeSlice);
 				
 				IFrameError.add(Helper.meanAbsoluteError(arrOriginSlice,arrDecodeSlice));
 				
 			}
-			else if(i == 1)
+			else if(i == 2)
 			{
-				Helper.copySlice(arrOriginal, arrOriginSlice, h, w,
-						intMacroBlockSize);;
 				arrDecodeSlice = modePredDC(arrOriginal, h, w, intMacroBlockSize);	
 				arrDecodeGroup.add(arrDecodeSlice);
 				
@@ -590,7 +586,7 @@ public class H264s {
 		
 		intMode = minIndex;
 		
-		Helper.copySlice(arrDecodeGroup.get(minIndex), arrDecodeSlice, 0, 0, intMacroBlockSize);
+		arrDecodeSlice = Helper.getSlice(arrDecodeGroup.get(minIndex),  0, 0, intMacroBlockSize);
 		
 		for(int i = 0; i < intMacroBlockSize; i++)
 			for(int j = 0; j < intMacroBlockSize; j++)
@@ -696,18 +692,24 @@ public class H264s {
 				 */
 				if (!blnInverse) {
 					// \\\\\\\\\\ FILL IN HERE //////////
-					int [][] arrSlice = new int[intMacroBlockSize][intMacroBlockSize];
+					int [][] arrOriginSlice = new int[intMacroBlockSize][intMacroBlockSize];
 					
+					arrOriginSlice = Helper.getSlice(arrOriginal,  h , w, intMacroBlockSize);
 					
 					SimpleEntry<Integer, Integer> objMotionVector = null;
 					
 					objMotionVector = logSearch(intReferenceFrameIndex,
-					     arrReferenceFrame, intFrameIndex,  arrSlice,
-							h,  w,  enmColorChannel,
-							intMacroBlockSize);
+					     arrReferenceFrame, intFrameIndex,  arrOriginSlice,
+							h,  w,  enmColorChannel, intMacroBlockSize);
 					
 					addPFrameMoitionVector(intFrameIndex, objMotionVector);
 					
+					for(int i  = 0; i < intMacroBlockSize; i++)
+						for(int j = 0; j < intMacroBlockSize; j++)
+						{
+							arrResidual[i+h][j+w] = arrOriginSlice[i][j] - arrReferenceFrame[objMotionVector.getValue()+h][objMotionVector.getKey()+w];
+						}
+				
 					
 				}
 				/**
@@ -853,23 +855,63 @@ public class H264s {
 		// \\\\\\\\\\ FILL IN HERE //////////
 		SimpleEntry<Integer, Integer> objMotionVector = null;
 		
+		int[][] arrRefSlice = new int[intMacroBlockSize][intMacroBlockSize];
+		
 		int step = LOG_SEARCH_STEP_SIZE;
-		int xMin = 0;
-		int yMin = 0;
+		
+		double inf = Double.POSITIVE_INFINITY;
+		
+		double minError = inf;
+		
+	
 		
 		if (enmColorChannel != ColorChannel.Y) {
-			 lstMotionVectors.get(intFrameIndex).get(Ypos)
-			 return 
+			return null;
 		}
 
+		
+		 ArrayList<SimpleEntry<Integer, Integer>> lpath = new ArrayList<SimpleEntry<Integer, Integer>>();
+		 
+		 
 		
 		
 		while(step > 1)
 		{
+			
+			
+			lpath.add(new SimpleEntry(intXpos, intYpos));
+			
+			lpath.add(new SimpleEntry(intXpos + step, intYpos + step));
+			
+			lpath.add(new SimpleEntry(intXpos + step, intYpos - step));
+			
+			lpath.add(new SimpleEntry(intXpos , intYpos + step));
+			
+			lpath.add(new SimpleEntry(intXpos , intYpos - step));
+			
+			lpath.add(new SimpleEntry(intXpos - step, intYpos + step));
+			
+			lpath.add(new SimpleEntry(intXpos - step, intYpos - step));
+			
+			lpath.add(new SimpleEntry(intXpos + step, intYpos + step));
+						
+			lpath.add(new SimpleEntry(intXpos - step, intYpos));
+			
 			for(int i = 0; i < 9; i++)
 			{
+				Helper.copySlice(arrReferenceFrame, arrRefSlice, lpath.get(i).getValue() , lpath.get(i).getKey(),  intMacroBlockSize);
 				
+				double EstimateError = Helper.meanAbsoluteError(arrSlice, arrRefSlice);
+				
+				if(EstimateError < minError )
+				{
+					minError = EstimateError;
+					objMotionVector = lpath.get(i);
+				}
 			}
+			
+	
+			lpath.clear();
 			
 			step = step / 2;
 		}
