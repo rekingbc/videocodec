@@ -62,7 +62,19 @@ public class IntegerTransform {
 		int[][] arrResult = null;
 
 		// \\\\\\\\\\ FILL IN HERE //////////
+		double[][] arrTransformedDbl = Helper.convertToDbl(arrOriginal,
+				BLOCK_SIZE);
 
+		
+		RealMatrix matTransformed = new Array2DRowRealMatrix(arrTransformedDbl);
+		double[][] arrResultDbl = matH.multiply(matTransformed)
+				.multiply(matH_T).getData();
+		
+		arrTransformedDbl = objQuantizer.quantitize(arrTransformedDbl);
+
+	    arrResult = Helper.convertToInt(arrResultDbl, BLOCK_SIZE,
+				(int) Math.pow(2, 15));
+		
 		return arrResult;
 	}
 

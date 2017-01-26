@@ -2,6 +2,7 @@ package org.sfu.mm;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.awt.image.BufferedImage;
 import java.util.AbstractMap.SimpleEntry;
 
@@ -433,6 +434,19 @@ public class H264s {
 				 */
 				if (!blnInverse) {
 					// \\\\\\\\\\ FILL IN HERE //////////
+					
+					intMode =  calculateIFrameBlockMode(arrOriginal,
+							arrPredictedSlice, h, w, intMacroBlockSize);
+					
+					addIFrameMoitionVector(intFrameIndex, intMode);
+					
+					for(int i  = 0; i < intMacroBlockSize; i++)
+						for(int j = 0; j < intMacroBlockSize; j++)
+						{
+							arrPredicted[i+h][j+w] = arrPredictedSlice[i][j];
+							arrResidual[i+h][j+w] = arrOriginal[i+h][j+w] - arrPredictedSlice[i][j];
+						}
+					
 				}
 				/**
 				 * *************************************************************
@@ -532,8 +546,57 @@ public class H264s {
 	private int calculateIFrameBlockMode(int[][] arrOriginal,
 			int[][] arrDecoded, int h, int w, int intMacroBlockSize) {
 		int intMode = 0;
-
+	
+        
 		// \\\\\\\\\\ FILL IN HERE //////////
+		
+		ArrayList<Double> IFrameError = new ArrayList<Double>();
+        ArrayList<int[][]> arrDecodeGroup = new ArrayList<int[][]>();
+		int [][] arrOriginSlice =  new int[intMacroBlockSize][intMacroBlockSize];
+		int [][] arrDecodeSlice =  new int[intMacroBlockSize][intMacroBlockSize];
+		for(int i = 0; i < 3; i++){
+			if(i == 0)
+			{
+				Helper.copySlice(arrOriginal, arrOriginSlice, h, w,
+						intMacroBlockSize);;
+				arrDecodeSlice = modePredHOR(arrOriginal, h, w, intMacroBlockSize);
+				arrDecodeGroup.add(arrDecodeSlice);
+				
+				IFrameError.add(Helper.meanAbsoluteError(arrOriginSlice,arrDecodeSlice));
+			}
+			else if(i == 1)
+			{
+				Helper.copySlice(arrOriginal, arrOriginSlice, h, w,
+						intMacroBlockSize);;
+				arrDecodeSlice = modePredVER(arrOriginal, h, w, intMacroBlockSize);
+				arrDecodeGroup.add(arrDecodeSlice);
+				
+				IFrameError.add(Helper.meanAbsoluteError(arrOriginSlice,arrDecodeSlice));
+				
+			}
+			else if(i == 1)
+			{
+				Helper.copySlice(arrOriginal, arrOriginSlice, h, w,
+						intMacroBlockSize);;
+				arrDecodeSlice = modePredDC(arrOriginal, h, w, intMacroBlockSize);	
+				arrDecodeGroup.add(arrDecodeSlice);
+				
+				IFrameError.add(Helper.meanAbsoluteError(arrOriginSlice,arrDecodeSlice));
+			}
+			
+		}
+		
+		int minIndex = IFrameError.indexOf(Collections.min(IFrameError));
+		
+		intMode = minIndex;
+		
+		Helper.copySlice(arrDecodeGroup.get(minIndex), arrDecodeSlice, 0, 0, intMacroBlockSize);
+		
+		for(int i = 0; i < intMacroBlockSize; i++)
+			for(int j = 0; j < intMacroBlockSize; j++)
+			{
+				arrDecoded[i][j] = arrDecodeSlice[i][j];
+			}
 
 		return intMode;
 	}
@@ -542,6 +605,13 @@ public class H264s {
 		int[][] arrSlice = new int[intDim][intDim];
 
 		// \\\\\\\\\\ FILL IN HERE //////////
+		for(int i = 0; i < intDim; i++)
+		{
+			for(int j = 0; j < intDim; j++){
+				arrSlice[i][j] = arrOriginal[i+h-1][j+w];
+			}
+			
+		}
 
 		return arrSlice;
 	}
@@ -550,15 +620,44 @@ public class H264s {
 		int[][] arrSlice = new int[intDim][intDim];
 
 		// \\\\\\\\\\ FILL IN HERE //////////
+		for(int i = 0; i < intDim; i++)
+		{
+			for(int j = 0; j < intDim; j++){
+				arrSlice[i][j] = arrOriginal[i+h][j+w-1];
+			}
+		}
 
 		return arrSlice;
 	}
 
 	private int[][] modePredDC(int[][] arrOriginal, int h, int w, int intDim) {
 		int[][] arrSlice = new int[intDim][intDim];
-
+		
 		// \\\\\\\\\\ FILL IN HERE //////////
+		
+		ArrayList<Integer> DC = new ArrayList<Integer> ();
+		
+		for(int i = 0; i < intDim; i++)
+		{
+			DC.add(arrOriginal[i+h][w-1]);
+		}
+		
+		for(int j = 0; j < intDim; j++)
+		{
+			DC.add(arrOriginal[h-1][j+w]);
+		}
+		
+		int DCaverage = Helper.average(DC);
 
+
+		for(int i = 0; i < intDim; i++)
+		{
+			for(int j = 0; j < intDim; j++){
+				arrSlice[i][j] = DCaverage;
+			}
+			
+		}
+		
 		return arrSlice;
 	}
 
@@ -597,6 +696,19 @@ public class H264s {
 				 */
 				if (!blnInverse) {
 					// \\\\\\\\\\ FILL IN HERE //////////
+					int [][] arrSlice = new int[intMacroBlockSize][intMacroBlockSize];
+					
+					
+					SimpleEntry<Integer, Integer> objMotionVector = null;
+					
+					objMotionVector = logSearch(intReferenceFrameIndex,
+					     arrReferenceFrame, intFrameIndex,  arrSlice,
+							h,  w,  enmColorChannel,
+							intMacroBlockSize);
+					
+					addPFrameMoitionVector(intFrameIndex, objMotionVector);
+					
+					
 				}
 				/**
 				 * *************************************************************
@@ -737,9 +849,30 @@ public class H264s {
 			int[][] arrReferenceFrame, int intFrameIndex, int[][] arrSlice,
 			int intYpos, int intXpos, ColorChannel enmColorChannel,
 			int intMacroBlockSize) {
-		SimpleEntry<Integer, Integer> objMotionVector = null;
 
 		// \\\\\\\\\\ FILL IN HERE //////////
+		SimpleEntry<Integer, Integer> objMotionVector = null;
+		
+		int step = LOG_SEARCH_STEP_SIZE;
+		int xMin = 0;
+		int yMin = 0;
+		
+		if (enmColorChannel != ColorChannel.Y) {
+			 lstMotionVectors.get(intFrameIndex).get(Ypos)
+			 return 
+		}
+
+		
+		
+		while(step > 1)
+		{
+			for(int i = 0; i < 9; i++)
+			{
+				
+			}
+			
+			step = step / 2;
+		}
 
 		return objMotionVector;
 	}
