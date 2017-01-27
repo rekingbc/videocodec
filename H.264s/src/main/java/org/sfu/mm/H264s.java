@@ -437,7 +437,7 @@ public class H264s {
 					
 					intMode =  calculateIFrameBlockMode(arrOriginal, arrPredictedSlice, h, w, intMacroBlockSize);
 					
-					System.out.println("The int mode is: " + intMode);
+					//System.out.println("The int mode is: " + intMode);
 					
 					addIFrameMoitionVector(intFrameIndex, intMode);
 					
@@ -752,8 +752,8 @@ public class H264s {
 					for(int i  = 0; i < intMacroBlockSize; i++)
 						for(int j = 0; j < intMacroBlockSize; j++)
 						{
-							arrResidual[i+h][j+w] = arrOriginSlice[i][j] - arrReferenceFrame[intYMoitionVector+h][intXMoitionVector+w];
-
+							arrResidual[i+h][j+w] = arrEncodeReferenceFrame[intYMoitionVector+h][intXMoitionVector+w] 
+									- arrOriginSlice[i][j];
 						}	
 					
 				}
@@ -790,6 +790,8 @@ public class H264s {
 							arrPredictedSlice, arrResidualSlice);
 					Helper.copySlice(arrDecoded, arrDecodedSlice, h, w,
 							intMacroBlockSize);
+					
+				//	System.out.println("The test predicted slice: " + arrPredictedSlice[5][5]);
 				}
 				/**
 				 * *************************************************************
@@ -961,10 +963,7 @@ public class H264s {
 		
 		while(step > 15)
 		{
-			//System.out.println("The new Y : " + yMid +
-			//		" The new  X: " + xMid + " Error: " + minError);
-			
-			
+
 			
 			lpath.add(new SimpleEntry(xMid + step, yMid + step));
 			
@@ -1022,6 +1021,11 @@ public class H264s {
 		
 		vecX = xMid - intXpos;
 		vecY = yMid - intYpos;
+		
+		if(vecX != 0 || vecY != 0)
+			System.out.println("Error Motion Vector Y : " + yMid + " " + intYpos + 
+								" Error Motion Vector X: " + xMid + " " + intXpos);
+			
 		
 
 		objMotionVector= new SimpleEntry(vecX, vecY);

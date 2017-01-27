@@ -67,11 +67,13 @@ public class IntegerTransform {
 
 		
 		RealMatrix matTransformed = new Array2DRowRealMatrix(arrTransformedDbl);
+		
 		double[][] arrResultDbl = matH.multiply(matTransformed)
 				.multiply(matH_T).getData();
 		
-		arrTransformedDbl = objQuantizer.quantitize(arrTransformedDbl);
+		arrResultDbl = objQuantizer.quantitize(arrResultDbl);
 
+	   // arrResult = Helper.convertToInt(arrResultDbl, BLOCK_SIZE,(int) Math.pow(2, 15));
 	    arrResult = Helper.convertToInt(arrResultDbl, BLOCK_SIZE,
 				(int) Math.pow(2, 15));
 		

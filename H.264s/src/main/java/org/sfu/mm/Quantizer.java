@@ -50,12 +50,12 @@ public class Quantizer {
 	}
 
 	public double[][] quantitize(double[][] arrOriginal) {
-		double arrQuantized[][] = null;
+		double arrQuantized[][] = new double[BLOCK_SIZE][BLOCK_SIZE];
 
 		// \\\\\\\\\\ FILL IN HERE //////////
 		for (int i = 0; i < BLOCK_SIZE; i++) {
 			for (int j = 0; j < BLOCK_SIZE; j++) {
-				arrOriginal[i][j] = (int) (arrOriginal[i][j] * arrMf[i][j]);
+				arrQuantized[i][j] =  (arrOriginal[i][j] * arrMf[i][j]);
 			}
 		}
 
