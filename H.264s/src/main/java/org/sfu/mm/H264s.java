@@ -435,11 +435,40 @@ public class H264s {
 				if (!blnInverse) {
 					// \\\\\\\\\\ FILL IN HERE //////////
 					
-					intMode =  calculateIFrameBlockMode(arrOriginal, arrPredictedSlice, h, w, intMacroBlockSize);
+					if(enmColorChannel == ColorChannel.Y)
+					{
+					
+						intMode =  calculateIFrameBlockMode(arrOriginal, arrPredictedSlice, h, w, intMacroBlockSize);
 					
 					//System.out.println("The int mode is: " + intMode);
 					
-					addIFrameMoitionVector(intFrameIndex, intMode);
+					     addIFrameMoitionVector(intFrameIndex, intMode);
+					}
+					
+					else
+					{
+						intMode = getIFrameMoitionVector(intFrameIndex,
+								intMacroBlockIndex);
+						
+						switch (intMode) {
+						case -1: // Copy residual, no prediction
+							break;
+						case 0: // Horizontal Prediction
+							arrPredictedSlice = modePredHOR(arrOriginal, h, w,
+									intMacroBlockSize);
+							break;
+						case 1: // Vertical Prediction
+							arrPredictedSlice = modePredVER(arrOriginal, h, w,
+									intMacroBlockSize);
+							break;
+						case 2: // DC prediction
+							arrPredictedSlice = modePredDC(arrOriginal, h, w,
+									intMacroBlockSize);
+							break;
+						}
+					}
+					
+
 					
 					for(int i  = 0; i < intMacroBlockSize; i++)
 						for(int j = 0; j < intMacroBlockSize; j++)
@@ -604,7 +633,13 @@ public class H264s {
 		
 		if(h == 0 || w == 0)
 		{
-			arrSlice = Helper.getSlice(arrOriginal, h, w, intDim);
+			for(int i = 0; i < intDim; i++)
+			{
+				for(int j = 0; j < intDim; j++){
+					arrSlice[i][j] = arrOriginal[i+h][j+w];
+				}
+				
+			}
 			return arrSlice;
 		}
 
@@ -624,8 +659,15 @@ public class H264s {
 		int[][] arrSlice = new int[intDim][intDim];
 		if(h == 0 || w == 0)
 		{
-			arrSlice = Helper.getSlice(arrOriginal, h, w, intDim);
+			for(int i = 0; i < intDim; i++)
+			{
+				for(int j = 0; j < intDim; j++){
+					arrSlice[i][j] = arrOriginal[i+h][j+w];
+				}
+			}
+			
 			return arrSlice;
+
 		}
 
 
@@ -645,7 +687,13 @@ public class H264s {
 		
 		if(h == 0 || w == 0)
 		{
-			arrSlice = Helper.getSlice(arrOriginal, h, w, intDim);
+			for(int i = 0; i < intDim; i++)
+			{
+				for(int j = 0; j < intDim; j++){
+					arrSlice[i][j] = arrSlice[0][0];
+				}
+				
+			}
 			return arrSlice;
 		}
 
@@ -708,7 +756,7 @@ public class H264s {
 		int intEncodeReferenceIndex = getPIFrameReferenceIndex(intFrameIndex);
 		
 		int[][] arrEncodeReferenceFrame = getPIFrameReference(enmColorChannel,
-				intFrameIndex, intReferenceFrameIndex);
+				intFrameIndex, intEncodeReferenceIndex);
 
 		for (int h = 0; h < intHeight; h += intMacroBlockSize) {
 			for (int w = 0; w < intWidth; w += intMacroBlockSize) {
@@ -752,8 +800,7 @@ public class H264s {
 					for(int i  = 0; i < intMacroBlockSize; i++)
 						for(int j = 0; j < intMacroBlockSize; j++)
 						{
-							arrResidual[i+h][j+w] = arrEncodeReferenceFrame[intYMoitionVector+h][intXMoitionVector+w] 
-									- arrOriginSlice[i][j];
+							arrResidual[i+h][j+w] = arrOriginSlice[i][j] - arrEncodeReferenceFrame[intYMoitionVector+h+i][intXMoitionVector+w+j];
 						}	
 					
 				}
@@ -852,7 +899,10 @@ public class H264s {
 	
 	private int getPIFrameReferenceIndex(int intFrameIndex) {
 		int intReferenceFrameIndex = intFrameIndex;
-		for (int i = intFrameIndex + 1; i < intFrameCount; i++) {
+
+		for (int i = intFrameIndex - 1; i < intFrameCount; i--) {
+			    if(i == -1 || lstFrameTypes.get(i) == FrameType.I)
+			    	break;
 				if (lstFrameTypes.get(i) == FrameType.P) {
 					intReferenceFrameIndex = i;
 					break;
