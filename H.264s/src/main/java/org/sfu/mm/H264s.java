@@ -702,6 +702,9 @@ public class H264s {
 		int intReferenceFrameIndex = getPFrameReferenceIndex(intFrameIndex);
 		int[][] arrReferenceFrame = getPFrameReference(enmColorChannel,
 				intFrameIndex, intReferenceFrameIndex);
+		
+		int[][] arrEncodeReferenceFrame = getPIFrameReference(enmColorChannel,
+				intFrameIndex, intReferenceFrameIndex);
 
 		for (int h = 0; h < intHeight; h += intMacroBlockSize) {
 			for (int w = 0; w < intWidth; w += intMacroBlockSize) {
@@ -723,7 +726,7 @@ public class H264s {
 					if(enmColorChannel == ColorChannel.Y)
 					  {
 						 objMotionVector = logSearch(intReferenceFrameIndex,
-					        arrReferenceFrame, intFrameIndex,  arrOriginSlice,
+					        arrEncodeReferenceFrame, intFrameIndex,  arrOriginSlice,
 							 h,  w,  enmColorChannel, intMacroBlockSize);
 					
 						 addPFrameMoitionVector(intFrameIndex, objMotionVector);
@@ -756,10 +759,10 @@ public class H264s {
 						for(int j = 0; j < intMacroBlockSize; j++)
 						{
 							arrResidual[i+h][j+w] = arrOriginSlice[i][j] - arrReferenceFrame[intYMoitionVector+h][intXMoitionVector+w];
-							System.out.println("The Height : " + h +
-									"The width: " + w);
-							System.out.println("Motion Vector Y : " + objMotionVector.getValue() +
-									"Motion Vector X: " + objMotionVector.getKey());
+			//				System.out.println("The Height : " + h +
+			//						"The width: " + w);
+			//				System.out.println("Motion Vector Y : " + objMotionVector.getValue() +
+			//						"Motion Vector X: " + objMotionVector.getKey());
 						}	
 					
 				}
@@ -866,6 +869,23 @@ public class H264s {
 		return intReferenceFrameIndex;
 	}
 
+	private int[][] getPIFrameReference(ColorChannel enmColorChannel,
+			int intFrameIndex, int intReferenceFrameIndex) {
+		int[][] arrReference = null;
+		switch (enmColorChannel) {
+		case Y:
+			arrReference = lstOriginalY.get(intReferenceFrameIndex);
+			break;
+		case U:
+			arrReference = lstOriginalU.get(intReferenceFrameIndex);
+			break;
+		case V:
+			arrReference = lstOriginalV.get(intReferenceFrameIndex);
+			break;
+		}
+		return arrReference;
+	}
+	
 	private int[][] getPFrameReference(ColorChannel enmColorChannel,
 			int intFrameIndex, int intReferenceFrameIndex) {
 		int[][] arrReference = null;
@@ -929,13 +949,9 @@ public class H264s {
 			return null;			
 		}
 		
-		else{
-
-		
+		else{	
 		 ArrayList<SimpleEntry<Integer, Integer>> lpath = new ArrayList<SimpleEntry<Integer, Integer>>();
-		 
-		 
-		
+	
 		
 		while(step > 15)
 		{
@@ -961,14 +977,18 @@ public class H264s {
 			lpath.add(new SimpleEntry(xMid - step, yMid));
 			
 			for(int i = 0; i < 9; i++)
-			{
-				
+			{	
 				
 				if(lpath.get(i).getValue() >= 0 && lpath.get(i).getKey() >= 0 
 						&& lpath.get(i).getValue() < 288 &&  lpath.get(i).getKey() < 352)
 				{
 					arrRefSlice = Helper.getSlice(arrReferenceFrame,  lpath.get(i).getValue() , lpath.get(i).getKey(),  intMacroBlockSize);
 				    EstimateError = Helper.meanAbsoluteError(arrSlice, arrRefSlice);
+				    System.out.println("refslice x : " + arrReferenceFrame[0][0] + " refslice y : " + arrReferenceFrame[0][0] 
+				    		+ " refslice z : " + arrReferenceFrame[0][2]);
+				    
+				    System.out.println("lpath x : " + lpath.get(i).getKey() + " lpath y: " + lpath.get(i).getValue() 
+				    		+ " The estimated Error: " + EstimateError);
 				    
 				}
 				if(EstimateError < minError )
@@ -979,7 +999,7 @@ public class H264s {
 					
 							
 				}
-				System.out.println("The iter i: " + i + " The step: " + step);
+				
 			}
 			
 			lpath.clear();
