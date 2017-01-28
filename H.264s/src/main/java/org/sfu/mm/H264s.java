@@ -753,9 +753,9 @@ public class H264s {
 		int[][] arrReferenceFrame = getPFrameReference(enmColorChannel,
 				intFrameIndex, intReferenceFrameIndex);
 		
-		int intEncodeReferenceIndex = getPIFrameReferenceIndex(intFrameIndex);
+		int intEncodeReferenceIndex = getPFrameReferenceIndex(intFrameIndex);
 		
-		int[][] arrEncodeReferenceFrame = getPIFrameReference(enmColorChannel,
+		int[][] arrEncodeReferenceFrame = getPFrameReference(enmColorChannel,
 				intFrameIndex, intEncodeReferenceIndex);
 
 		for (int h = 0; h < intHeight; h += intMacroBlockSize) {
@@ -897,7 +897,7 @@ public class H264s {
 		return objMotionVector;
 	}
 	
-	private int getPIFrameReferenceIndex(int intFrameIndex) {
+/*	private int getPIFrameReferenceIndex(int intFrameIndex) {
 		int intReferenceFrameIndex = intFrameIndex;
 
 		for (int i = intFrameIndex - 1; i < intFrameCount; i--) {
@@ -911,7 +911,7 @@ public class H264s {
 			}
 
 		return intReferenceFrameIndex;
-	}
+	}*/
 	
 
 	private int getPFrameReferenceIndex(int intFrameIndex) {
@@ -926,7 +926,7 @@ public class H264s {
 		return intReferenceFrameIndex;
 	}
 
-	private int[][] getPIFrameReference(ColorChannel enmColorChannel,
+/*	private int[][] getPIFrameReference(ColorChannel enmColorChannel,
 			int intFrameIndex, int intReferenceFrameIndex) {
 		int[][] arrReference = null;
 		switch (enmColorChannel) {
@@ -941,7 +941,7 @@ public class H264s {
 			break;
 		}
 		return arrReference;
-	}
+	}*/
 	
 	private int[][] getPFrameReference(ColorChannel enmColorChannel,
 			int intFrameIndex, int intReferenceFrameIndex) {
