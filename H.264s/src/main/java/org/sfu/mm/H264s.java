@@ -211,7 +211,8 @@ public class H264s {
 	private void codec(ColorChannel enmColorChannel, int intFrameIndex,
 			FrameType enmFrameType) {
 		encode(enmColorChannel, intFrameIndex, enmFrameType);
-		decode(enmColorChannel, intFrameIndex, enmFrameType);
+		decode(enmColorChannel, intFrameIndex, enmFrameType); 
+		// This order makes the decode frame not void
 	}
 
 	/**
@@ -437,7 +438,7 @@ public class H264s {
 					
 					if(enmColorChannel == ColorChannel.Y)
 					{
-					
+					//calculate the intra mode through choose best MSE
 						intMode =  calculateIFrameBlockMode(arrOriginal, arrPredictedSlice, h, w, intMacroBlockSize);
 					
 					//System.out.println("The int mode is: " + intMode);
@@ -447,6 +448,8 @@ public class H264s {
 					
 					else
 					{
+						//The motion vector is extracted from the Iframe Motion Vector, they share the same mode for Y, U, V
+						
 						intMode = getIFrameMoitionVector(intFrameIndex,
 								intMacroBlockIndex);
 						
@@ -469,7 +472,8 @@ public class H264s {
 					}
 					
 
-					
+					//The Residual and Predicted Macro Blocks are computed through mode prediction and substraction 
+					//from the original
 					for(int i  = 0; i < intMacroBlockSize; i++)
 						for(int j = 0; j < intMacroBlockSize; j++)
 						{
@@ -631,7 +635,7 @@ public class H264s {
 	private int[][] modePredHOR(int[][] arrOriginal, int h, int w, int intDim) {
 		int[][] arrSlice = new int[intDim][intDim];
 		
-		if(h == 0 || w == 0)
+		if(h == 0 || w == 0) // Use the same pixel at Boundary 
 		{
 			for(int i = 0; i < intDim; i++)
 			{
@@ -657,7 +661,7 @@ public class H264s {
 
 	private int[][] modePredVER(int[][] arrOriginal, int h, int w, int intDim) {
 		int[][] arrSlice = new int[intDim][intDim];
-		if(h == 0 || w == 0)
+		if(h == 0 || w == 0)  // Use the same pixel at Boundary 
 		{
 			for(int i = 0; i < intDim; i++)
 			{
@@ -685,7 +689,7 @@ public class H264s {
 	private int[][] modePredDC(int[][] arrOriginal, int h, int w, int intDim) {
 		int[][] arrSlice = new int[intDim][intDim];
 		
-		if(h == 0 || w == 0)
+		if(h == 0 || w == 0)  // Use the same pixel at Boundary 
 		{
 			for(int i = 0; i < intDim; i++)
 			{
@@ -775,7 +779,9 @@ public class H264s {
 					int intXMoitionVector = 0;
 					int intYMoitionVector = 0;
 					
-					if(enmColorChannel == ColorChannel.Y)
+					//Only calculate motion vector Y frame
+					
+					if(enmColorChannel == ColorChannel.Y)  
 					  {
 						 objMotionVector = logSearch(intEncodeReferenceIndex,
 					        arrEncodeReferenceFrame, intFrameIndex,  arrOriginSlice,
@@ -792,15 +798,18 @@ public class H264s {
 						
 						intXMoitionVector = objMotionVector.getKey();
 						intYMoitionVector = objMotionVector.getValue();
+						// The motion vector for U, V is half of Y
 						intXMoitionVector /= 2;
-						intYMoitionVector /= 2;
+						intYMoitionVector /= 2; 
 					}
 					
-				
+				   // The residual is the only returned frame at this stage
+					
 					for(int i  = 0; i < intMacroBlockSize; i++)
 						for(int j = 0; j < intMacroBlockSize; j++)
 						{
 							arrResidual[i+h][j+w] = arrOriginSlice[i][j] - arrEncodeReferenceFrame[intYMoitionVector+h+i][intXMoitionVector+w+j];
+							System.out.println("The reference frame is like: " + arrEncodeReferenceFrame[intYMoitionVector+h+i][intXMoitionVector+w+j]);
 						}	
 					
 				}
@@ -1014,6 +1023,7 @@ public class H264s {
 		while(step > 15)
 		{
 
+			// Search 9 blocks around the start block
 			
 			lpath.add(new SimpleEntry(xMid + step, yMid + step));
 			
@@ -1072,9 +1082,9 @@ public class H264s {
 		vecX = xMid - intXpos;
 		vecY = yMid - intYpos;
 		
-		if(vecX != 0 || vecY != 0)
-			System.out.println("Error Motion Vector Y : " + yMid + " " + intYpos + 
-								" Error Motion Vector X: " + xMid + " " + intXpos);
+		//if(vecX != 0 || vecY != 0)
+		//	System.out.println("Error Motion Vector Y : " + yMid + " " + intYpos + 
+		//						" Error Motion Vector X: " + xMid + " " + intXpos);
 			
 		
 

@@ -28,12 +28,14 @@ public class Program extends JFrame implements WindowListener {
 	 */
 	public static String COASTGUARD_FILE_NAME = "coastguard_cif.yuv";
 	public static String STEFAN_FILE_NAME = "stefan_cif.yuv";
+	public static String AKIYO_FILE_NAME = "akiyo_cif.yuv";
 
 	/**
 	 * Test videos first frame
 	 */
 	public static BufferedImage THUMB_COASTGUARD = null;
 	public static BufferedImage THUMB_STEFAN = null;
+	public static BufferedImage THUMB_AKIYO = null;
 
 	/**
 	 * Constructor
@@ -99,6 +101,9 @@ public class Program extends JFrame implements WindowListener {
 
 		urlImage = Helper.CONTEXT_CLASS_LOADER.getResource(STEFAN_FILE_NAME);
 		THUMB_STEFAN = loadThumbnail(urlImage);
+		
+		urlImage = Helper.CONTEXT_CLASS_LOADER.getResource(AKIYO_FILE_NAME);
+		THUMB_AKIYO = loadThumbnail(urlImage);
 	}
 
 	private static BufferedImage loadThumbnail(URL urlImage) {

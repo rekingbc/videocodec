@@ -62,6 +62,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 	private ButtonGroup objButtonGroupImage = new ButtonGroup();
 	private JRadioButton rbCoastGuard = new JRadioButton("Coast Guard");
 	private JRadioButton rbStefan = new JRadioButton("Stefan");
+	private JRadioButton rbAkiyo = new JRadioButton("Akiyo");
 
 	/**
 	 * Constructor
@@ -127,6 +128,9 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 		} else if (rbStefan.isSelected()) {
 			objBufferedImage = Program.THUMB_STEFAN;
 		}
+		else if (rbAkiyo.isSelected()) {
+			objBufferedImage = Program.THUMB_AKIYO;
+		}
 
 		pnlOriginalVideo.setImage(objBufferedImage, "Original Video");
 		stateChanged(null);
@@ -142,7 +146,8 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 	@Override
 	public void actionPerformed(ActionEvent objActionEvent) {
 		if (objActionEvent.getSource() == rbCoastGuard
-				|| objActionEvent.getSource() == rbStefan) {
+				|| objActionEvent.getSource() == rbStefan
+				|| objActionEvent.getSource() == rbAkiyo) {
 			try {
 				setImage();
 			} catch (IOException e) {
@@ -181,6 +186,10 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 					} else if (rbStefan.isSelected()) {
 						openStream = Helper.CONTEXT_CLASS_LOADER.getResource(
 								Program.STEFAN_FILE_NAME).openStream();
+					}
+					else if (rbAkiyo.isSelected()) {
+						openStream = Helper.CONTEXT_CLASS_LOADER.getResource(
+								Program.AKIYO_FILE_NAME).openStream();
 					}
 
 					objH26X = new H264s(openStream, intQScaleFactor);
@@ -237,6 +246,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 	public void enableControls(Boolean blnEnable) {
 		this.rbCoastGuard.setEnabled(blnEnable);
 		this.rbStefan.setEnabled(blnEnable);
+		this.rbAkiyo.setEnabled(blnEnable);
 		this.cbQF.setEnabled(blnEnable);
 		this.btnRun.setEnabled(blnEnable);
 		this.btnPlay.setEnabled(blnEnable);
@@ -247,6 +257,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 		btnRun.addActionListener(this);
 		rbCoastGuard.addActionListener(this);
 		rbStefan.addActionListener(this);
+		rbAkiyo.addActionListener(this);
 		btnPlay.addActionListener(this);
 	}
 
@@ -334,6 +345,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 
 		objButtonGroupImage.add(rbCoastGuard);
 		objButtonGroupImage.add(rbStefan);
+		objButtonGroupImage.add(rbAkiyo);
 		rbStefan.setSelected(true);
 
 		objGeneralSettingsGroupLayout
@@ -345,7 +357,8 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 												GroupLayout.Alignment.LEADING)
 										.addComponent(lblTestImage)
 										.addComponent(rbStefan)
-										.addComponent(rbCoastGuard))
+										.addComponent(rbCoastGuard)
+										.addComponent(rbAkiyo))
 						.addGroup(
 								objGeneralSettingsGroupLayout
 										.createParallelGroup(
@@ -374,6 +387,12 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 										.createParallelGroup(
 												GroupLayout.Alignment.BASELINE)
 										.addComponent(rbCoastGuard)
+										.addComponent(btnRun))
+						.addGroup(
+								objGeneralSettingsGroupLayout
+										.createParallelGroup(
+												GroupLayout.Alignment.BASELINE)
+										.addComponent(rbAkiyo)
 										.addComponent(btnRun))
 						.addGroup(
 								objGeneralSettingsGroupLayout
