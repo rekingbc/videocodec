@@ -809,7 +809,7 @@ public class H264s {
 						for(int j = 0; j < intMacroBlockSize; j++)
 						{
 							arrResidual[i+h][j+w] = arrOriginSlice[i][j] - arrEncodeReferenceFrame[intYMoitionVector+h+i][intXMoitionVector+w+j];
-							System.out.println("The reference frame is like: " + arrEncodeReferenceFrame[intYMoitionVector+h+i][intXMoitionVector+w+j]);
+							//System.out.println("The reference frame is like: " + arrEncodeReferenceFrame[intYMoitionVector+h+i][intXMoitionVector+w+j]);
 						}	
 					
 				}
