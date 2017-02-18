@@ -20,6 +20,8 @@ def load_data():
     reference='reference_images/'
     score='mos.txt'
 
+    size= 128, 128
+
     DistortImg = []
     RefImg = []
     DistortLabel = []
@@ -31,6 +33,7 @@ def load_data():
             img = Image.open(root+imgfile, 'r')
             #print img.getbands()
             #x = img_to_array(img)
+            img.thumbnail(size, Image.ANTIALIAS)
 
             x0 = np.asarray(img, dtype=theano.config.floatX)
             #x = x.reshape((1,) + x.shape)
@@ -50,9 +53,15 @@ def load_data():
     for root, dirs, filenames in os.walk(dirname+reference):
         for imgfile in filenames:
             #print filename
-            img = load_img(root+imgfile)
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
+            img = Image.open(root+imgfile, 'r')
+            #print img.getbands()
+            #x = img_to_array(img)
+            img.thumbnail(size, Image.ANTIALIAS)
+
+            x0 = np.asarray(img, dtype=theano.config.floatX)
+            #x = x.reshape((1,) + x.shape)
+            #print 'The imgfile is' +imgfile
+            x = 0.2126 * x0[:,:,0] + 0.7152 * x0[:,:,1] + 0.0722 * x0[:,:,2]
             RefImg.append(x)
             label[0] = int(imgfile[1:3])
             RefLabel.append(label)
@@ -61,9 +70,9 @@ def load_data():
 
     ScoreLabel = open(dirname+score).read().splitlines()
     ScoreLabel = map(float, ScoreLabel)
-    print ScoreLabel
+    #print ScoreLabel
 
-    print len(DistortImg)
+    print DistortImg[1]
 
     return DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel
 

@@ -6,10 +6,12 @@ np.random.seed(1337)  # for reproducibility
 
 import random
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input, Lambda
+from keras.layers import Dense, Dropout, Input, Lambda, Activation, Flatten
+from keras.layers import Convolution2D, MaxPooling2D,BatchNormalization
+from keras.regularizers import l2, activity_l2
 from keras.optimizers import RMSprop
 from keras import backend as K
-from .datasets.tid import load_data
+from datasets.tid import load_data
 
 
 def euclidean_distance(vects):
@@ -48,16 +50,42 @@ def create_pairs(x, digit_indices):
             labels += [1, 0]
     return np.array(pairs), np.array(labels)
 
+def create_compare(x_train, x_ref):
+    pairs = []
+    labels = []
+    for i in xrange(25):
+        for j in xrange(120):
+            pairs += [x_train[120*i+j], x_ref[i]]
 
-def create_base_network(input_dim):
+    return np.array(pairs)
+
+
+
+def create_base_network(input_shape):
     '''Base network to be shared (eq. to feature extraction).
     '''
     seq = Sequential()
-    seq.add(Dense(128, input_shape=(input_dim,), activation='relu'))
-    seq.add(Dropout(0.1))
-    seq.add(Dense(128, activation='relu'))
-    seq.add(Dropout(0.1))
-    seq.add(Dense(128, activation='relu'))
+
+    seq.add(Convolution2D(64, 5, 5, border_mode='same',
+                input_shape=input_shape))
+    seq.add(Activation('relu'))
+    seq.add(Convolution2D(64, 5, 5))
+    seq.add(Activation('relu'))
+    seq.add(MaxPooling2D(pool_size=(5, 5), strides=(2, 2)))
+    seq.add(Dropout(0.25))
+
+    seq.add(Convolution2D(128, 3, 3, border_mode='same'))
+    seq.add(BatchNormalization())
+    seq.add(Activation('relu'))
+    seq.add(Convolution2D(128, 3, 3))
+    seq.add(BatchNormalization())
+    seq.add(Activation('relu'))
+    seq.add(MaxPooling2D(pool_size=(2, 2),strides=(2, 2)))
+    seq.add(Dropout(0.25))
+
+    seq.add(Flatten())
+    seq.add(Dense(512))
+    seq.add(Activation('relu'))
     return seq
 
 
@@ -69,26 +97,39 @@ def compute_accuracy(predictions, labels):
 
 # the data, shuffled and split between train and test sets
 DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel = load_data()
-X_train = DistortImg[:,:,1:2001]
-X_test =  DistortImg[:,:,2001:3000]
 
-X_train /= 255
-X_test /= 255
-input_dim = 784
-nb_epoch = 20
+
+
 
 # create training+test positive and negative pairs
-digit_indices = [np.where(y_train == i)[0] for i in range(10)]
+'''digit_indices = [np.where(y_train == i)[0] for i in range(10)]
 tr_pairs, tr_y = create_pairs(X_train, digit_indices)
 
 digit_indices = [np.where(y_test == i)[0] for i in range(10)]
-te_pairs, te_y = create_pairs(X_test, digit_indices)
+te_pairs, te_y = create_pairs(X_test, digit_indices)'''
+
+all_pairs = create_compare(DistortImg, RefImg)
+
+X_train = all_pairs[1:2001]
+X_test =  all_pairs[2001:3000]
+
+Y_train = ScoreLabel[1:2001]
+Y_test = ScoreLabel[2001:3000]
+
+
+X_train /= 255
+X_test /= 255
+input_dim = 128,128
+nb_epoch = 20
+input_shape = (128,128,1)
+
+print X_train[1]
 
 # network definition
-base_network = create_base_network(input_dim)
+base_network = create_base_network(input_shape)
 
-input_a = Input(shape=(input_dim,))
-input_b = Input(shape=(input_dim,))
+input_a = Input(shape=input_shape)
+input_b = Input(shape=input_shape)
 
 # because we re-use the same instance `base_network`,
 # the weights of the network
@@ -103,16 +144,16 @@ model = Model(input=[input_a, input_b], output=distance)
 # train
 rms = RMSprop()
 model.compile(loss=contrastive_loss, optimizer=rms)
-model.fit([tr_pairs[:, 0], tr_pairs[:, 1]], tr_y,
-          validation_data=([te_pairs[:, 0], te_pairs[:, 1]], te_y),
-          batch_size=128,
+model.fit([X_train[:, 0], X_train[:, 1]], Y_train,
+          validation_data=([X_test[:, 0], X_test[:, 1]], Y_test),
+          batch_size=32,
           nb_epoch=nb_epoch)
 
 # compute final accuracy on training and test sets
-pred = model.predict([tr_pairs[:, 0], tr_pairs[:, 1]])
+'''pred = model.predict([X_train[:, 0], X_train[:, 1]])
 tr_acc = compute_accuracy(pred, tr_y)
-pred = model.predict([te_pairs[:, 0], te_pairs[:, 1]])
+pred = model.predict([X_test[:, 0], X_test[:, 1]])
 te_acc = compute_accuracy(pred, te_y)
 
 print('* Accuracy on training set: %0.2f%%' % (100 * tr_acc))
-print('* Accuracy on test set: %0.2f%%' % (100 * te_acc))
+print('* Accuracy on test set: %0.2f%%' % (100 * te_acc))'''
