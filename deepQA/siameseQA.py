@@ -9,6 +9,7 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Input, Lambda
 from keras.optimizers import RMSprop
 from keras import backend as K
+from .datasets.tid import load_data
 
 
 def euclidean_distance(vects):
@@ -67,11 +68,10 @@ def compute_accuracy(predictions, labels):
 
 
 # the data, shuffled and split between train and test sets
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
-X_train = X_train.reshape(60000, 784)
-X_test = X_test.reshape(10000, 784)
-X_train = X_train.astype('float32')
-X_test = X_test.astype('float32')
+DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel = load_data()
+X_train = DistortImg[:,:,1:2001]
+X_test =  DistortImg[:,:,2001:3000]
+
 X_train /= 255
 X_test /= 255
 input_dim = 784
