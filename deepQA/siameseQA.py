@@ -55,7 +55,7 @@ def create_compare(x_train, x_ref):
     labels = []
     for i in xrange(25):
         for j in xrange(120):
-            pairs += [x_train[120*i+j], x_ref[i]]
+            pairs += [[x_train[120*i+j], x_ref[i]]]
 
     return np.array(pairs)
 
@@ -66,19 +66,15 @@ def create_base_network(input_shape):
     '''
     seq = Sequential()
 
-    seq.add(Convolution2D(64, 5, 5, border_mode='same',
+    seq.add(Convolution2D(64, 3, 3, border_mode='same',
                 input_shape=input_shape))
     seq.add(Activation('relu'))
-    seq.add(Convolution2D(64, 5, 5))
+    seq.add(Convolution2D(64, 3, 3))
     seq.add(Activation('relu'))
-    seq.add(MaxPooling2D(pool_size=(5, 5), strides=(2, 2)))
+    seq.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
     seq.add(Dropout(0.25))
 
-    seq.add(Convolution2D(128, 3, 3, border_mode='same'))
-    seq.add(BatchNormalization())
-    seq.add(Activation('relu'))
     seq.add(Convolution2D(128, 3, 3))
-    seq.add(BatchNormalization())
     seq.add(Activation('relu'))
     seq.add(MaxPooling2D(pool_size=(2, 2),strides=(2, 2)))
     seq.add(Dropout(0.25))
@@ -111,19 +107,16 @@ te_pairs, te_y = create_pairs(X_test, digit_indices)'''
 all_pairs = create_compare(DistortImg, RefImg)
 
 X_train = all_pairs[1:2001]
-X_test =  all_pairs[2001:3000]
+X_test =  all_pairs[2000:]
 
 Y_train = ScoreLabel[1:2001]
-Y_test = ScoreLabel[2001:3000]
+Y_test = ScoreLabel[2000:]
 
 
-X_train /= 255
-X_test /= 255
-input_dim = 128,128
+
+input_dim = 96,128
 nb_epoch = 20
-input_shape = (128,128,1)
-
-print X_train[1]
+input_shape = (96,128,1)
 
 # network definition
 base_network = create_base_network(input_shape)
@@ -141,12 +134,27 @@ distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([proc
 
 model = Model(input=[input_a, input_b], output=distance)
 
+x_train1 = np.expand_dims(X_train[:,0], axis=3)
+x_train2 = np.expand_dims(X_train[:,1], axis=3)
+x_test1 = np.expand_dims(X_test[:,0], axis=3)
+x_test2 = np.expand_dims(X_test[:,1], axis=3)
+x_valid1 = np.expand_dims(all_pairs[:,0], axis=3)
+x_valid2 = np.expand_dims(all_pairs[:,1], axis=3)
+
+
+x_train1 /= 255
+x_train2 /= 255
+x_test1 /= 255
+x_test2 /= 255
+x_valid1 /= 255
+x_valid2 /= 255
+
 # train
 rms = RMSprop()
-model.compile(loss=contrastive_loss, optimizer=rms)
-model.fit([X_train[:, 0], X_train[:, 1]], Y_train,
-          validation_data=([X_test[:, 0], X_test[:, 1]], Y_test),
-          batch_size=32,
+model.compile(loss="mean_squared_error", optimizer=rms)
+model.fit( [x_valid1, x_valid2], ScoreLabel,
+          validation_split=0.1, shuffle=True,
+          batch_size=30,
           nb_epoch=nb_epoch)
 
 # compute final accuracy on training and test sets

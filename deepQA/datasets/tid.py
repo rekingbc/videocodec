@@ -72,7 +72,7 @@ def load_data():
     ScoreLabel = map(float, ScoreLabel)
     #print ScoreLabel
 
-    print DistortImg[1]
+    #print DistortImg[1]
 
     return DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel
 
