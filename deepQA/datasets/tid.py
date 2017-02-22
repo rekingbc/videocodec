@@ -22,33 +22,40 @@ def load_data():
 
     size= 128, 128
 
-    DistortImg = []
-    RefImg = []
-    DistortLabel = []
-    RefLabel = []
+
+    DistortLabel = np.zeros((3000,3), dtype='float32')
+    RefLabel = np.zeros((25,1), dtype='float32')
     label = [0, 0, 0]
+
+    DistortImg = np.zeros((3000, 96,128,3), dtype='uint8')
+    RefImg = np.zeros((25,96,128,3), dtype='uint8')
+    i = 0
 
     for root, dirs, filenames in os.walk(dirname+distortion):
         for imgfile in filenames:
+
             img = Image.open(root+imgfile, 'r')
             #print img.getbands()
             #x = img_to_array(img)
             img.thumbnail(size, Image.ANTIALIAS)
 
-            x0 = np.asarray(img, dtype=theano.config.floatX)
+            DistortImg[i,:,:,:] = np.asarray(img, dtype='float32')
             #x = x.reshape((1,) + x.shape)
             #print 'The imgfile is' +imgfile
-            x = 0.2126 * x0[:,:,0] + 0.7152 * x0[:,:,1] + 0.0722 * x0[:,:,2]
+        #    x = 0.2126 * x0[:,:,0] + 0.7152 * x0[:,:,1] + 0.0722 * x0[:,:,2]
             #print  x.shape
-            DistortImg.append(x)
+
             if(len(imgfile) < 12):
                 print 'The file: ' + imgfile
-            label[0] = int(imgfile[1:3])
-            label[1] = int(imgfile[4:6])
-            label[2] = int(imgfile[7])
-            #print label
-            DistortLabel.append(label)
+            DistortLabel[i,0] = int(imgfile[1:3])
+            DistortLabel[i,1] = int(imgfile[4:6])
+            DistortLabel[i,2] = int(imgfile[7])
 
+            i = i + 1
+            #print label
+
+
+    j = 0
 
     for root, dirs, filenames in os.walk(dirname+reference):
         for imgfile in filenames:
@@ -58,14 +65,15 @@ def load_data():
             #x = img_to_array(img)
             img.thumbnail(size, Image.ANTIALIAS)
 
-            x0 = np.asarray(img, dtype=theano.config.floatX)
+            RefImg[j,:,:,:] = np.asarray(img, dtype='float32')
             #x = x.reshape((1,) + x.shape)
             #print 'The imgfile is' +imgfile
-            x = 0.2126 * x0[:,:,0] + 0.7152 * x0[:,:,1] + 0.0722 * x0[:,:,2]
-            RefImg.append(x)
-            label[0] = int(imgfile[1:3])
-            RefLabel.append(label)
+    #        x = 0.2126 * x0[:,:,0] + 0.7152 * x0[:,:,1] + 0.0722 * x0[:,:,2]
+
+            RefLabel[j] = int(imgfile[1:3])
+            #RefLabel.append(label)
             #print label
+            j = j + 1
 
 
     ScoreLabel = open(dirname+score).read().splitlines()
@@ -75,23 +83,6 @@ def load_data():
     #print DistortImg[1]
 
     return DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel
-
-"""    distortfile = open("Distort.pkl",'wb')
-    pickle.dump(DistortImg, distortfile)
-    distortfile.close()
-
-    distortlabel = open("Label_distort.pkl","wb")
-    pickle.dump(DistortLabel,distortlabel)
-    distortlabel.close()
-
-    reffile = open("Reference.pkl", "wb")
-    pickle.dump(RefImg, reffile)
-    reffile.close()
-
-    reflabel = open('Label_ref.pkl', "wb")
-    pickle.dump(RefLabel, reflabel)
-    reflabel.close()"""
-
 
 
 

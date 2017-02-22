@@ -7,7 +7,7 @@ np.random.seed(1337)  # for reproducibility
 import random
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Input, Lambda, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D,BatchNormalization, AveragePooling2D
+from keras.layers import Convolution2D, MaxPooling2D,BatchNormalization
 from keras.regularizers import l2, activity_l2
 from keras.optimizers import RMSprop
 from keras import backend as K
@@ -72,7 +72,7 @@ def create_base_network(input_shape):
     seq.add(Convolution2D(32, 3, 3))
     seq.add(BatchNormalization())
     seq.add(Activation('relu'))
-    seq.add(AveragePooling2D(pool_size=(3, 3), strides=(2, 2)))
+    seq.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
     seq.add(Dropout(0.25))
 
     seq.add(Convolution2D(64, 3, 3))
@@ -81,13 +81,12 @@ def create_base_network(input_shape):
     seq.add(Convolution2D(64, 3, 3))
     seq.add(BatchNormalization())
     seq.add(Activation('relu'))
-    seq.add(AveragePooling2D(pool_size=(2, 2),strides=(2, 2)))
+    seq.add(MaxPooling2D(pool_size=(2, 2),strides=(2, 2)))
     seq.add(Dropout(0.25))
 
     seq.add(Flatten())
-    seq.add(Dense(128, activation='relu'))
-    seq.add(Dropout(0.2))
-    seq.add(Dense(128, activation='softmax'))
+    seq.add(Dense(256))
+    seq.add(AveragePooling1D())
     return seq
 
 
@@ -121,10 +120,9 @@ Y_test = ScoreLabel[2000:]
 Y_quant = DistortLabel
 
 input_dim = 96,128
-nb_epoch = 10
-input_shape = (96,128,3)
-ScoreLabel = np.array(ScoreLabel)
-ScoreLabel = ScoreLabel / 10
+nb_epoch = 20
+input_shape = (96,128,1)
+
 # network definition
 base_network = create_base_network(input_shape)
 
@@ -141,26 +139,24 @@ distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([proc
 
 model = Model(input=[input_a, input_b], output=distance)
 
-'''x_train1 = np.expand_dims(X_train[:,0], axis=3)
+x_train1 = np.expand_dims(X_train[:,0], axis=3)
 x_train2 = np.expand_dims(X_train[:,1], axis=3)
 x_test1 = np.expand_dims(X_test[:,0], axis=3)
-x_test2 = np.expand_dims(X_test[:,1], axis=3)'''
-x_valid1 = all_pairs[:,0]
-x_valid2 = all_pairs[:,1]
-
-print (x_valid1[1000])
+x_test2 = np.expand_dims(X_test[:,1], axis=3)
+x_valid1 = np.expand_dims(all_pairs[:,0], axis=3)
+x_valid2 = np.expand_dims(all_pairs[:,1], axis=3)
 
 
-'''x_train1 /= 255
+x_train1 /= 255
 x_train2 /= 255
 x_test1 /= 255
-x_test2 /= 255'''
+x_test2 /= 255
 x_valid1 /= 255
 x_valid2 /= 255
 
 # train
 rms = RMSprop()
-model.compile(loss=contrastive_loss, optimizer=rms)
+model.compile(loss="mean_squared_error", optimizer=rms)
 model.fit( [x_valid1, x_valid2], ScoreLabel,
           validation_split=0.0, shuffle=True,
           batch_size=30,
