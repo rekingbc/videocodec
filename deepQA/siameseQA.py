@@ -16,8 +16,8 @@ from datasets.tid import load_data
 
 def euclidean_distance(vects):
     x, y = vects
-    return K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True))
-
+    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 128
+    return testK
 
 def eucl_dist_output_shape(shapes):
     shape1, shape2 = shapes
@@ -66,15 +66,14 @@ def create_base_network(input_shape):
     '''
     seq = Sequential()
 
-    seq.add(Convolution2D(32, 3, 3, border_mode='same',
+    seq.add(Convolution2D(32, 5, 5, border_mode='same',
                 input_shape=input_shape))
     seq.add(Activation('relu'))
-    seq.add(Convolution2D(32, 3, 3))
+    seq.add(Convolution2D(32, 5, 5))
     seq.add(BatchNormalization())
     seq.add(Activation('relu'))
-    seq.add(AveragePooling2D(pool_size=(3, 3), strides=(2, 2)))
+    seq.add(MaxPooling2D(pool_size=(5, 5), strides=(2, 2)))
     seq.add(Dropout(0.25))
-
     seq.add(Convolution2D(64, 3, 3))
     seq.add(BatchNormalization())
     seq.add(Activation('relu'))
@@ -83,12 +82,12 @@ def create_base_network(input_shape):
     seq.add(Activation('relu'))
     seq.add(AveragePooling2D(pool_size=(2, 2),strides=(2, 2)))
     seq.add(Dropout(0.25))
-
     seq.add(Flatten())
-    seq.add(Dense(128, activation='relu'))
-    seq.add(Dropout(0.2))
-    seq.add(Dense(128, activation='softmax'))
+    seq.add(Dense(128))
     return seq
+
+
+
 
 
 def compute_accuracy(predictions, labels):
@@ -147,8 +146,9 @@ x_test1 = np.expand_dims(X_test[:,0], axis=3)
 x_test2 = np.expand_dims(X_test[:,1], axis=3)'''
 x_valid1 = all_pairs[:,0]
 x_valid2 = all_pairs[:,1]
+validLabel = ScoreLabel[1:1001]
 
-print (x_valid1[1000])
+print (x_valid1[500])
 
 
 '''x_train1 /= 255
@@ -160,17 +160,18 @@ x_valid2 /= 255
 
 # train
 rms = RMSprop()
-model.compile(loss=contrastive_loss, optimizer=rms)
+model.compile(loss='mean_squared_error', optimizer=rms)
 model.fit( [x_valid1, x_valid2], ScoreLabel,
-          validation_split=0.0, shuffle=True,
+          validation_split=0.0,
           batch_size=30,
           nb_epoch=nb_epoch)
-
+print (x_valid1[500])
 
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
 final_file = open('/Users/rwa56//videocodec/deepQA/datasets/predict.txt', 'w')
+#print ("The final prediction: " ,final_predict)
 for item in final_predict:
-  final_file.write("%d\n" % item)
+  final_file.write("%f\n" % item)
 final_file.close()
 
 # compute final accuracy on training and test sets
