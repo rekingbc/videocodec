@@ -17,7 +17,7 @@ from datasets.tid import load_data
 
 def euclidean_distance(vects):
     x, y = vects
-    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 128
+    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 256
     return testK
 
 def eucl_dist_output_shape(shapes):
@@ -84,7 +84,7 @@ def create_base_network(input_shape):
     seq.add(AveragePooling2D(pool_size=(2, 2),strides=(2, 2)))
     seq.add(Dropout(0.25))
     seq.add(Flatten())
-    seq.add(Dense(128))
+    seq.add(Dense(256))
     return seq
 
 
