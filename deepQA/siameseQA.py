@@ -17,7 +17,7 @@ from datasets.tid import load_data
 
 def euclidean_distance(vects):
     x, y = vects
-    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 256
+    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 25
     return testK
 
 def eucl_dist_output_shape(shapes):
@@ -124,7 +124,7 @@ input_dim = 96,128
 nb_epoch = 10
 input_shape = (96,128,3)
 ScoreLabel = np.array(ScoreLabel)
-ScoreLabel = ScoreLabel / 10
+#ScoreLabel = ScoreLabel / 10
 # network definition
 base_network = create_base_network(input_shape)
 
@@ -165,9 +165,9 @@ adagrad=Adagrad(lr=0.01, epsilon=1e-08, decay=0.0)
 #model.compile(loss='mean_squared_error', optimizer=rms)
 model.compile(loss='mean_squared_error', optimizer=adagrad)
 model.fit( [x_valid1, x_valid2], ScoreLabel,
-          validation_split=0.0,
+          validation_split=0.1,
           batch_size=30,
-          nb_epoch=nb_epoch)
+          nb_epoch=100)
 print (x_valid1[500])
 
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
