@@ -10,7 +10,7 @@ from keras.layers import Dense, Dropout, Input, Lambda, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D,BatchNormalization, AveragePooling2D
 from keras.regularizers import l2, activity_l2
 from keras.optimizers import RMSprop,Adagrad
-from keras.metrics import kullback_leibler_divergence
+#from keras.metrics import kullback_leibler_divergence
 from keras import backend as K
 from datasets.tid import load_data
 
@@ -171,7 +171,7 @@ model.fit( [x_valid1, x_valid2], ScoreLabel,
 print (x_valid1[500])
 
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
-final_file = open('/Users/rwa56//videocodec/deepQA/datasets/predict.txt', 'w')
+final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict.txt', 'w')
 #print ("The final prediction: " ,final_predict)
 for item in final_predict:
   final_file.write("%f\n" % item)

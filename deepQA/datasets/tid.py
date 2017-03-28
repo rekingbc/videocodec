@@ -15,7 +15,7 @@ import warnings
 import theano
 
 def load_data():
-    dirname='/Users/rwa56/Downloads/tid2013/'
+    dirname='/home/jianj/project/tid2013/'
     distortion='distorted_images/'
     reference='reference_images/'
     score='mos.txt'
