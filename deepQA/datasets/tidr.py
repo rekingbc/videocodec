@@ -20,15 +20,15 @@ def load_data():
     reference='reference_images/'
     score='mos.txt'
 
-    size= 128, 128
+    size= 256, 256
 
 
     DistortLabel = np.zeros((3000,3), dtype='float32')
     RefLabel = np.zeros((25,1), dtype='float32')
     label = [0, 0, 0]
 
-    DistortImg = np.zeros((3000, 96,128,3), dtype='uint8')
-    RefImg = np.zeros((25,96,128,3), dtype='uint8')
+    DistortImg = np.zeros((3000, 256,256,3), dtype='uint8')
+    RefImg = np.zeros((25,256,256,3), dtype='uint8')
     i = 0
 
     for root, dirs, filenames in os.walk(dirname+distortion):
@@ -37,7 +37,17 @@ def load_data():
             img = Image.open(root+imgfile, 'r')
             #print img.getbands()
             #x = img_to_array(img)
-            img.thumbnail(size, Image.ANTIALIAS)
+            #img.thumbnail(size, Image.ANTIALIAS)
+            img.thumbnail((256,256), Image.ANTIALIAS)
+
+            img = ImageOps.fit(img,(256,256), Image.ANTIALIAS)
+            if i == 0:
+                img.show()
+            #resizeimage.resize_cover(img, [256, 256])
+            #ImageOps.fit(img, size, Image.ANTIALIAS)
+            #img = tf.image.resize_images(img, size)
+           # testimg = np.asarray(img, dtype='float32')
+           # print testimg.shape
 
             DistortImg[i,:,:,:] = np.asarray(img, dtype='float32')
             #x = x.reshape((1,) + x.shape)
@@ -63,7 +73,10 @@ def load_data():
             img = Image.open(root+imgfile, 'r')
             #print img.getbands()
             #x = img_to_array(img)
-            img.thumbnail(size, Image.ANTIALIAS)
+            #img.thumbnail(size, Image.ANTIALIAS)
+            img.thumbnail((256,256), Image.ANTIALIAS)
+
+            img = ImageOps.fit(img,(256,256), Image.ANTIALIAS)
 
             RefImg[j,:,:,:] = np.asarray(img, dtype='float32')
             #x = x.reshape((1,) + x.shape)
@@ -83,7 +96,6 @@ def load_data():
     #print DistortImg[1]
 
     return DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel
-
 
 
 def main():

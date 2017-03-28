@@ -84,6 +84,15 @@ def create_base_network(input_shape):
     seq.add(MaxPooling2D(pool_size=(2, 2),strides=(2, 2)))
     seq.add(Dropout(0.25))
 
+    seq.add(Convolution2D(64, 3, 3))
+    seq.add(BatchNormalization())
+    seq.add(Activation('relu'))
+    seq.add(Convolution2D(64, 3, 3))
+    seq.add(BatchNormalization())
+    seq.add(Activation('relu'))
+    seq.add(MaxPooling2D(pool_size=(2, 2),strides=(2, 2)))
+    seq.add(Dropout(0.25))
+
     seq.add(Flatten())
     seq.add(Dense(256))
     seq.add(AveragePooling1D())
