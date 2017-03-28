@@ -92,7 +92,7 @@ def ResNet50(include_top=True,
             input_shape = (1, None, None)
     else:
         if include_top:
-            input_shape = (96, 128, 1)
+            input_shape = (96, 128, 3)
         else:
             input_shape = (None, None, 1)
 
@@ -234,7 +234,7 @@ Y_test = ScoreLabel[2000:]
 
 input_dim = 96,128
 nb_epoch = 20
-input_shape = (96,128,1)
+input_shape = (96,128,3)
 
 # network definition
 base_network = ResNet50(include_top=True,
@@ -253,13 +253,18 @@ distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([proc
 
 model = Model(input=[input_a, input_b], output=distance)
 
-x_train1 = np.expand_dims(X_train[:,0], axis=3)
-x_train2 = np.expand_dims(X_train[:,1], axis=3)
-x_test1 = np.expand_dims(X_test[:,0], axis=3)
-x_test2 = np.expand_dims(X_test[:,1], axis=3)
-x_valid1 = np.expand_dims(all_pairs[:,0], axis=3)
-x_valid2 = np.expand_dims(all_pairs[:,1], axis=3)
-
+#x_train1 = np.expand_dims(X_train[:,0], axis=3)
+#x_train2 = np.expand_dims(X_train[:,1], axis=3)
+#x_test1 = np.expand_dims(X_test[:,0], axis=3)
+#x_test2 = np.expand_dims(X_test[:,1], axis=3)
+#x_valid1 = np.expand_dims(all_pairs[:,0], axis=3)
+#x_valid2 = np.expand_dims(all_pairs[:,1], axis=3)
+x_train1 = X_train[:,0]
+x_train2 = X_train[:,1]
+x_test1 = X_test[:,0]
+x_test2 = X_test[:,1]
+x_valid1 = all_pairs[:,0]
+x_valid2 = all_pairs[:,1]
 
 x_train1 /= 255
 x_train2 /= 255
