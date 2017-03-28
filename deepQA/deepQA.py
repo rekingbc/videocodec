@@ -121,7 +121,7 @@ Y_quant = DistortLabel
 
 input_dim = 96,128
 nb_epoch = 20
-input_shape = (96,128,1)
+input_shape = (96,128,3)
 
 # network definition
 base_network = create_base_network(input_shape)

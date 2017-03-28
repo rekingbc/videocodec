@@ -9,7 +9,8 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Input, Lambda, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D,BatchNormalization, AveragePooling2D
 from keras.regularizers import l2, activity_l2
-from keras.optimizers import RMSprop
+from keras.optimizers import RMSprop,Adagrad
+from keras.metrics import kullback_leibler_divergence
 from keras import backend as K
 from datasets.tid import load_data
 
@@ -159,8 +160,10 @@ x_valid1 /= 255
 x_valid2 /= 255
 
 # train
-rms = RMSprop()
-model.compile(loss='mean_squared_error', optimizer=rms)
+#rms = RMSprop()
+adagrad=Adagrad(lr=0.01, epsilon=1e-08, decay=0.0)
+#model.compile(loss='mean_squared_error', optimizer=rms)
+model.compile(loss='mean_squared_error', optimizer=adagrad)
 model.fit( [x_valid1, x_valid2], ScoreLabel,
           validation_split=0.0,
           batch_size=30,

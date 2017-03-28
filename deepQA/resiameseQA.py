@@ -285,7 +285,7 @@ model.fit( [x_valid1, x_valid2], ScoreLabel,
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
 final_file = open('/Users/rwa56//videocodec/deepQA/datasets/predict.txt', 'w')
 for item in final_predict:
-  final_file.write("%d\n" % item)
+  final_file.write("%f\n" % item)
 final_file.close()
 
 
