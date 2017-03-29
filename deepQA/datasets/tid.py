@@ -9,7 +9,7 @@ from scipy import linalg
 import scipy.ndimage as ndi
 from six.moves import range
 from keras import backend as K
-from PIL import Image
+from PIL import Image,ImageOps
 import threading
 import warnings
 import theano
@@ -20,15 +20,15 @@ def load_data():
     reference='reference_images/'
     score='mos.txt'
 
-    size= 128, 128
+    size= 256, 256
 
 
     DistortLabel = np.zeros((3000,3), dtype='float32')
     RefLabel = np.zeros((25,1), dtype='float32')
     label = [0, 0, 0]
 
-    DistortImg = np.zeros((3000, 96,128,3), dtype='uint8')
-    RefImg = np.zeros((25,96,128,3), dtype='uint8')
+    DistortImg = np.zeros((3000,224,224,3), dtype='uint8')
+    RefImg = np.zeros((25,224,224,3), dtype='uint8')
     i = 0
 
     for root, dirs, filenames in os.walk(dirname+distortion):
@@ -37,7 +37,9 @@ def load_data():
             img = Image.open(root+imgfile, 'r')
             #print img.getbands()
             #x = img_to_array(img)
-            img.thumbnail(size, Image.ANTIALIAS)
+       
+            img.thumbnail((224,224), Image.ANTIALIAS)
+	    img = ImageOps.fit(img,(224,224),Image.ANTIALIAS)
 
             DistortImg[i,:,:,:] = np.asarray(img, dtype='float32')
             #x = x.reshape((1,) + x.shape)
@@ -63,7 +65,8 @@ def load_data():
             img = Image.open(root+imgfile, 'r')
             #print img.getbands()
             #x = img_to_array(img)
-            img.thumbnail(size, Image.ANTIALIAS)
+            img.thumbnail((224,224), Image.ANTIALIAS)
+	    img = ImageOps.fit(img,(224,224),Image.ANTIALIAS)
 
             RefImg[j,:,:,:] = np.asarray(img, dtype='float32')
             #x = x.reshape((1,) + x.shape)

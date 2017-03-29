@@ -83,7 +83,18 @@ def create_base_network(input_shape):
     seq.add(Activation('relu'))
     seq.add(AveragePooling2D(pool_size=(2, 2),strides=(2, 2)))
     seq.add(Dropout(0.25))
+
+    seq.add(Convolution2D(64, 3, 3))
+    seq.add(BatchNormalization())
+    seq.add(Activation('relu'))
+    seq.add(Convolution2D(64, 3, 3))
+    seq.add(BatchNormalization())
+    seq.add(Activation('relu'))
+    seq.add(AveragePooling2D(pool_size=(2, 2),strides=(2, 2)))
+    seq.add(Dropout(0.25))
+
     seq.add(Flatten())
+    seq.add(Dense(256))
     seq.add(Dense(128))
     return seq
 
@@ -120,9 +131,9 @@ Y_test = ScoreLabel[2000:]
 
 Y_quant = DistortLabel
 
-input_dim = 96,128
+input_dim = 224,224
 nb_epoch = 10
-input_shape = (96,128,3)
+input_shape = (224,224,3)
 ScoreLabel = np.array(ScoreLabel)
 #ScoreLabel = ScoreLabel / 10
 # network definition
@@ -165,7 +176,7 @@ adagrad=Adagrad(lr=0.01, epsilon=1e-08, decay=0.0)
 #model.compile(loss='mean_squared_error', optimizer=rms)
 model.compile(loss='mean_squared_error', optimizer=adagrad)
 model.fit( [x_valid1, x_valid2], ScoreLabel,
-          validation_split=0.1,
+          validation_split=0.01,
           batch_size=30,
           nb_epoch=1000)
 print (x_valid1[500])
