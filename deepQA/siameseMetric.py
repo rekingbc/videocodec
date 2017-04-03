@@ -13,6 +13,8 @@ from keras.optimizers import RMSprop,Adagrad
 #from keras.metrics import kullback_leibler_divergence
 from keras import backend as K
 from datasets.tid import load_data
+from Distance.distance import *
+
 
 
 def euclidean_distance(vects):
@@ -104,11 +106,7 @@ DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel = load_data()
 
 
 # create training+test positive and negative pairs
-'''digit_indices = [np.where(y_train == i)[0] for i in range(10)]
-tr_pairs, tr_y = create_pairs(X_train, digit_indices)
 
-digit_indices = [np.where(y_test == i)[0] for i in range(10)]
-te_pairs, te_y = create_pairs(X_test, digit_indices)'''
 
 all_pairs = create_compare(DistortImg, RefImg)
 
@@ -137,14 +135,10 @@ input_b = Input(shape=input_shape)
 processed_a = base_network(input_a)
 processed_b = base_network(input_b)
 
-distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([processed_a, processed_b])
-
+#distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([processed_a, processed_b])
+distance = Lambda(KL, output_shape=eucl_dist_output_shape)([processed_a, processed_b])
 model = Model(input=[input_a, input_b], output=distance)
 
-'''x_train1 = np.expand_dims(X_train[:,0], axis=3)
-x_train2 = np.expand_dims(X_train[:,1], axis=3)
-x_test1 = np.expand_dims(X_test[:,0], axis=3)
-x_test2 = np.expand_dims(X_test[:,1], axis=3)'''
 x_valid1 = all_pairs[:,0]
 x_valid2 = all_pairs[:,1]
 validLabel = ScoreLabel[1:1001]
@@ -176,12 +170,3 @@ final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict.txt', 
 for item in final_predict:
   final_file.write("%f\n" % item)
 final_file.close()
-
-# compute final accuracy on training and test sets
-'''pred = model.predict([X_train[:, 0], X_train[:, 1]])
-tr_acc = compute_accuracy(pred, tr_y)
-pred = model.predict([X_test[:, 0], X_test[:, 1]])
-te_acc = compute_accuracy(pred, te_y)
-
-print('* Accuracy on training set: %0.2f%%' % (100 * tr_acc))
-print('* Accuracy on test set: %0.2f%%' % (100 * te_acc))'''

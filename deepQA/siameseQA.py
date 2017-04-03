@@ -17,7 +17,7 @@ from datasets.tid import load_data
 
 def euclidean_distance(vects):
     x, y = vects
-    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 128
+    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 256
     return testK
 
 def eucl_dist_output_shape(shapes):
@@ -124,7 +124,7 @@ input_dim = 224,224
 nb_epoch = 10
 input_shape = (224,224,3)
 ScoreLabel = np.array(ScoreLabel)
-#ScoreLabel = ScoreLabel / 10
+ScoreLabel = ScoreLabel / 10
 # network definition
 base_network = create_base_network(input_shape)
 
@@ -171,7 +171,7 @@ model.fit( [x_valid1, x_valid2], ScoreLabel,
 print (x_valid1[500])
 
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
-final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict.txt', 'w')
+final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict2.txt', 'w')
 #print ("The final prediction: " ,final_predict)
 for item in final_predict:
   final_file.write("%f\n" % item)
