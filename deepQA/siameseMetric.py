@@ -10,21 +10,14 @@ from keras.layers import Dense, Dropout, Input, Lambda, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D,BatchNormalization, AveragePooling2D
 from keras.regularizers import l2, activity_l2
 from keras.optimizers import RMSprop,Adagrad
-
-
-from keras.applications.resnet50 import ResNet50
-from keras.preprocessing import image
-from keras.applications.resnet50 import preprocess_input, decode_predictions
-
 #from keras.metrics import kullback_leibler_divergence
 from keras import backend as K
 from datasets.tid import load_data
 
 
-
 def euclidean_distance(vects):
     x, y = vects
-    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 100
+    testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 128
     return testK
 
 def eucl_dist_output_shape(shapes):
@@ -63,10 +56,7 @@ def create_compare(x_train, x_ref):
     labels = []
     for i in xrange(25):
         for j in xrange(120):
-            x1 = x_train[120*i+j]
-            x2 = x_ref[i]
-            pairs += [[x1, x2]]
-            #pairs += [[x_train[120*i+j], x_ref[i]]]
+            pairs += [[x_train[120*i+j], x_ref[i]]]
 
     return np.array(pairs)
 
@@ -97,10 +87,6 @@ def create_base_network(input_shape):
     seq.add(Dense(256))
     return seq
 
-def create_res_network():
-    model = ResNet50(weights='imagenet')
-
-    return model
 
 
 
@@ -115,15 +101,22 @@ def compute_accuracy(predictions, labels):
 DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel = load_data()
 
 
+
+
+# create training+test positive and negative pairs
+'''digit_indices = [np.where(y_train == i)[0] for i in range(10)]
+tr_pairs, tr_y = create_pairs(X_train, digit_indices)
+
+digit_indices = [np.where(y_test == i)[0] for i in range(10)]
+te_pairs, te_y = create_pairs(X_test, digit_indices)'''
+
 all_pairs = create_compare(DistortImg, RefImg)
 
-all_pairs = all_pairs.astype("float32")
+X_train = all_pairs[1:2001]
+X_test =  all_pairs[2000:]
 
-x_1 = all_pairs[:,0]
-x_2 = all_pairs[:,1]
-
-xo = preprocess_input(x_1)
-xr = preprocess_input(x_2)
+Y_train = ScoreLabel[1:2001]
+Y_test = ScoreLabel[2000:]
 
 Y_quant = DistortLabel
 
@@ -131,10 +124,9 @@ input_dim = 224,224
 nb_epoch = 10
 input_shape = (224,224,3)
 ScoreLabel = np.array(ScoreLabel)
-
 #ScoreLabel = ScoreLabel / 10
 # network definition
-base_network = create_res_network()
+base_network = create_base_network(input_shape)
 
 input_a = Input(shape=input_shape)
 input_b = Input(shape=input_shape)
@@ -149,24 +141,47 @@ distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([proc
 
 model = Model(input=[input_a, input_b], output=distance)
 
-
+'''x_train1 = np.expand_dims(X_train[:,0], axis=3)
+x_train2 = np.expand_dims(X_train[:,1], axis=3)
+x_test1 = np.expand_dims(X_test[:,0], axis=3)
+x_test2 = np.expand_dims(X_test[:,1], axis=3)'''
 x_valid1 = all_pairs[:,0]
 x_valid2 = all_pairs[:,1]
-
-adagrad=Adagrad(lr=0.01, epsilon=1e-08, decay=0.0)
-#model.compile(loss='mean_squared_error', optimizer=rms)
-model.compile(loss='mean_squared_error', optimizer=adagrad)
-model.fit( [xo, xr], ScoreLabel,
-          validation_split=0,
-          batch_size=30,
-          nb_epoch=200)
-
+validLabel = ScoreLabel[1:1001]
 
 print (x_valid1[500])
 
+
+'''x_train1 /= 255
+x_train2 /= 255
+x_test1 /= 255
+x_test2 /= 255'''
+x_valid1 /= 255
+x_valid2 /= 255
+
+# train
+#rms = RMSprop()
+adagrad=Adagrad(lr=0.01, epsilon=1e-08, decay=0.0)
+#model.compile(loss='mean_squared_error', optimizer=rms)
+model.compile(loss='mean_squared_error', optimizer=adagrad)
+model.fit( [x_valid1, x_valid2], ScoreLabel,
+          validation_split=0.01,
+          batch_size=30,
+          nb_epoch=200)
+print (x_valid1[500])
+
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
-final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict3.txt', 'w')
+final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict.txt', 'w')
 #print ("The final prediction: " ,final_predict)
 for item in final_predict:
   final_file.write("%f\n" % item)
 final_file.close()
+
+# compute final accuracy on training and test sets
+'''pred = model.predict([X_train[:, 0], X_train[:, 1]])
+tr_acc = compute_accuracy(pred, tr_y)
+pred = model.predict([X_test[:, 0], X_test[:, 1]])
+te_acc = compute_accuracy(pred, te_y)
+
+print('* Accuracy on training set: %0.2f%%' % (100 * tr_acc))
+print('* Accuracy on test set: %0.2f%%' % (100 * te_acc))'''
