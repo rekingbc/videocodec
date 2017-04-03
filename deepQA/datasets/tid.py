@@ -20,7 +20,7 @@ def load_data():
     reference='reference_images/'
     score='mos.txt'
 
-    size= 256, 256
+    size= 224, 224
 
 
     DistortLabel = np.zeros((3000,3), dtype='float32')
@@ -37,7 +37,7 @@ def load_data():
             img = Image.open(root+imgfile, 'r')
             #print img.getbands()
             #x = img_to_array(img)
-       
+
             img.thumbnail((224,224), Image.ANTIALIAS)
 	    img = ImageOps.fit(img,(224,224),Image.ANTIALIAS)
 
