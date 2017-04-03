@@ -167,7 +167,7 @@ model.compile(loss='mean_squared_error', optimizer=adagrad)
 model.fit( [x_valid1, x_valid2], ScoreLabel,
           validation_split=0.01,
           batch_size=30,
-          nb_epoch=500)
+          nb_epoch=200)
 print (x_valid1[500])
 
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
