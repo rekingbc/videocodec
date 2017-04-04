@@ -22,6 +22,15 @@ def euclidean_distance(vects):
     testK =  K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True)) / 128
     return testK
 
+def binary_crossentropy(inputset):
+    y_pred, y_true = inputset
+    return K.mean(K.binary_crossentropy(y_pred, y_true), axis=-1)
+
+
+def squared_hinge(inputset):
+    y_pred, y_true = inputset
+    return K.mean(K.square(K.maximum(1. - y_true * y_pred, 0.)), axis=-1)
+
 def eucl_dist_output_shape(shapes):
     shape1, shape2 = shapes
     return (shape1[0], 1)
@@ -109,20 +118,13 @@ DistortImg, DistortLabel, RefImg, RefLabel, ScoreLabel = load_data()
 
 
 all_pairs = create_compare(DistortImg, RefImg)
-
-X_train = all_pairs[1:2001]
-X_test =  all_pairs[2000:]
-
-Y_train = ScoreLabel[1:2001]
-Y_test = ScoreLabel[2000:]
-
-Y_quant = DistortLabel
+all_pairs = all_pairs.astype("float32")
 
 input_dim = 224,224
 nb_epoch = 10
 input_shape = (224,224,3)
-ScoreLabel = np.array(ScoreLabel)
-#ScoreLabel = ScoreLabel / 10
+ScoreLabel = np.array(ScoreLabel,dtype="float32")
+ScoreLabel = ScoreLabel / 10
 # network definition
 base_network = create_base_network(input_shape)
 
@@ -136,7 +138,9 @@ processed_a = base_network(input_a)
 processed_b = base_network(input_b)
 
 #distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([processed_a, processed_b])
-distance = Lambda(KL, output_shape=eucl_dist_output_shape)([processed_a, processed_b])
+#distance = Lambda(KL, output_shape=eucl_dist_output_shape)([processed_a, processed_b])
+#distance = Lambda(KL, output_shape=eucl_dist_output_shape)([processed_a, processed_b])
+distance = Lambda(binary_crossentropy, output_shape=eucl_dist_output_shape)([processed_a, processed_b])
 model = Model(input=[input_a, input_b], output=distance)
 
 x_valid1 = all_pairs[:,0]
@@ -145,11 +149,6 @@ validLabel = ScoreLabel[1:1001]
 
 print (x_valid1[500])
 
-
-'''x_train1 /= 255
-x_train2 /= 255
-x_test1 /= 255
-x_test2 /= 255'''
 x_valid1 /= 255
 x_valid2 /= 255
 
@@ -161,11 +160,11 @@ model.compile(loss='mean_squared_error', optimizer=adagrad)
 model.fit( [x_valid1, x_valid2], ScoreLabel,
           validation_split=0.01,
           batch_size=30,
-          nb_epoch=200)
+          nb_epoch=50)
 print (x_valid1[500])
 
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
-final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict.txt', 'w')
+final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict4.txt', 'w')
 #print ("The final prediction: " ,final_predict)
 for item in final_predict:
   final_file.write("%f\n" % item)

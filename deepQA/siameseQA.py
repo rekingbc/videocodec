@@ -13,6 +13,9 @@ from keras.optimizers import RMSprop,Adagrad
 #from keras.metrics import kullback_leibler_divergence
 from keras import backend as K
 from datasets.tid import load_data
+from keras.models import model_from_json
+
+
 
 
 def euclidean_distance(vects):
@@ -111,7 +114,7 @@ digit_indices = [np.where(y_test == i)[0] for i in range(10)]
 te_pairs, te_y = create_pairs(X_test, digit_indices)'''
 
 all_pairs = create_compare(DistortImg, RefImg)
-
+all_pairs =  all_pairs.astype("float32")
 X_train = all_pairs[1:2001]
 X_test =  all_pairs[2000:]
 
@@ -167,7 +170,7 @@ model.compile(loss='mean_squared_error', optimizer=adagrad)
 model.fit( [x_valid1, x_valid2], ScoreLabel,
           validation_split=0.01,
           batch_size=30,
-          nb_epoch=200)
+          nb_epoch=150)
 print (x_valid1[500])
 
 final_predict = model.predict([x_valid1, x_valid2],batch_size=30)
@@ -176,6 +179,12 @@ final_file = open('/home/jianj/project/videocodec/deepQA/datasets/predict2.txt',
 for item in final_predict:
   final_file.write("%f\n" % item)
 final_file.close()
+
+
+model_json = model.to_json()
+with open("model.json","w") as json_file:
+	json_file.write(model_json)
+
 
 # compute final accuracy on training and test sets
 '''pred = model.predict([X_train[:, 0], X_train[:, 1]])
