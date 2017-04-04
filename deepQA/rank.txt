@@ -1,0 +1,28 @@
+ Measure    Spearman correlation      
+ FSIMc           0.851                
+ PSNR-HA         0.819                
+ PSNR-HMA        0.813                
+ FSIM            0.801                
+ MSSIM           0.787                
+ PSNRc           0.687                
+ VSNR            0.681                
+ PSNR-HVS        0.654                
+ PSNR            0.640                
+ SSIM            0.637                
+ NQM             0.635                
+ PSNR-HVS-M      0.625                
+
+
+   Measure    Kendall correlation    
+   FSIMc           0.667            
+   PSNR-HA         0.643 
+   PSNR-HMA        0.632            
+   FSIM            0.630            
+   MSSIM           0.608            
+   VSNR            0.508            
+   PSNR-HVS        0.508            
+   PSNRc           0.496            
+   PSNR-HVS-M      0.482            
+   PSNR            0.470            
+   NQM             0.466            
+   SSIM            0.464    
